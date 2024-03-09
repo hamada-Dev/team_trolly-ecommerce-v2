@@ -1,0 +1,24 @@
+/.phpunit.cache
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+.env
+.env.backup
+.env.production
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+npm-debug.log
+yarn-error.log
+/.fleet
+/.idea
+/.vscode
+ main_file/vendor/srmklive/paypal/tests/Mocks/samples/sample2.pdf
+ main_file/vendor/srmklive/paypal/tests/Mocks/samples/sample.pdf
+codecanyon-pQXNhs7A-ecommercego-saas-ecommerce-store-with-multi-theme-and-multi-store.zip
+storage
+/vendor
+vendor
