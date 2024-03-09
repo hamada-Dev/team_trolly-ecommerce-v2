@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('pages', function (Blueprint $table) {
             $table->id();
-            $table->string('page_name');
-            $table->string('page_slug');
-            $table->text('page_content')->nullable();
-            $table->string('page_meta_title')->nullable();
-            $table->text('page_meta_description')->nullable();
-            $table->string('page_meta_keywords')->nullable();
+            $table->json('page_name');
+            $table->json('page_slug');
+            $table->json('page_content')->nullable();
+            $table->json('page_meta_title')->nullable();
+            $table->json('page_meta_description')->nullable();
+            $table->json('page_meta_keywords')->nullable();
             $table->boolean('page_status')->default(1)->comment('1 = Publish, 0 = Draft');
             $table->string('theme_id')->nullable();
             $table->integer('store_id');

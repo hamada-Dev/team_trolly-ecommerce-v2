@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('menus', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('name');
+            $table->json('name');
             $table->string('location')->nullable();
             $table->longText('content')->nullable();
             $table->string('theme_id')->nullable();

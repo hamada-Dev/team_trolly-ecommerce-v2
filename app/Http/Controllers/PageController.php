@@ -6,6 +6,7 @@ use App\Models\Page;
 use App\Models\Utility;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class PageController extends Controller
 {
@@ -43,28 +44,20 @@ class PageController extends Controller
         // if(auth()->user()->isAbleTo('Create Page'))
         // {
             $theme_id = APP_THEME();
-            $validator = \Validator::make(
-                $request->all(),
-                [
-                    'page_name' => 'required',
-                    'page_slug' => [
-                        'required',
-                        Rule::unique('pages')->where(function ($query)  use ($theme_id) {
-                            return $query->where('theme_id',APP_THEME());
-                        })
-                    ],
-                ]
-            );
-
+            $rules = [];
+            foreach (config('translation.languages') as $locale => $index) {
+                $rules += ['page_name.' . $locale => 'required|min:2|max:250'];
+                $rules += ['page_slug.' . $locale => 'required|min:2|max:250'];
+            }
+            $validator = Validator::make($request->all(),$rules);
             if($validator->fails())
             {
                 $messages = $validator->getMessageBag();
                 return redirect()->back()->with('error', $messages->first());
             }
-
             $page = new Page();
             $page->page_name = $request->page_name;
-            $page->page_slug = $request->page_slug;
+            $page->page_slug = str_replace(' ', '-', $request->page_slug[config('translation.default')]).'-'.time();
             $page->page_content = $request->page_content;
             $page->page_meta_title = $request->page_meta_title;
             $page->page_meta_description = $request->page_meta_description;

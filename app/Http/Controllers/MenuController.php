@@ -8,6 +8,7 @@ use App\Models\MainCategory;
 use App\Models\Page;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Validator;
 use Session;
 
 class MenuController extends Controller
@@ -45,13 +46,16 @@ class MenuController extends Controller
     {
         // if(auth()->user()->isAbleTo('Create Menu'))
         // {
-            $validator = \Validator::make(
-                $request->all(),
-                [
-                    'name' => 'required',
-                ]
-            );
-
+            $rules = [];
+            foreach (config('translation.languages') as $locale => $index) {
+                $rules += ['name.' . $locale => 'required|min:2|max:250'];
+            }
+            $validator = Validator::make($request->all(),$rules);
+            if($validator->fails())
+            {
+                $messages = $validator->getMessageBag();
+                return redirect()->back()->with('error', $messages->first());
+            }
             if($validator->fails())
             {
                 $messages = $validator->getMessageBag();
