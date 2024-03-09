@@ -5,17 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Qirolab\Theme\Theme;
+use Spatie\Translatable\HasTranslations;
 
 class Blog extends Model
 {
     use HasFactory;
+    use HasTranslations;
 
     protected $fillable = [
         'title', 'short_description', 'content', 'category_id', 'cover_image_url', 'cover_image_path', 'theme_id', 'store_id'
     ];
+    public $translatable = ['title', 'short_description', 'content',];
 
     public function category() {
-        return $this->hasOne(BlogCategory::class, 'id', 'category_id');
+        return $this->hasOne(BlogCategory::class, 'id', 'category_id')->withDefault();
     }
 
     public static function HomePageBlog($theme, $slug='',$no = 2)

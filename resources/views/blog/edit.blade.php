@@ -1,34 +1,51 @@
-
-{{Form::model($blog, array('route' => array('blog.update', $blog->id), 'method' => 'PUT', 'enctype' => 'multipart/form-data')) }}
+{{ Form::model($blog, ['route' => ['blog.update', $blog->id], 'method' => 'PUT', 'enctype' => 'multipart/form-data']) }}
 
 
 @if (isset(auth()->user()->currentPlan) && auth()->user()->currentPlan->enable_chatgpt == 'on')
-<div class="d-flex justify-content-end mb-1">
-    <a href="#" class="btn btn-primary me-2 ai-btn" data-size="lg" data-ajax-popup-over="true" data-url="{{ route('generate',['blog']) }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Generate') }}" data-title="{{ __('Generate Content With AI') }}">
-        <i class="fas fa-robot"></i> {{ __('Generate with AI') }}
-    </a>
-</div>
+    <div class="d-flex justify-content-end mb-1">
+        <a href="#" class="btn btn-primary me-2 ai-btn" data-size="lg" data-ajax-popup-over="true"
+            data-url="{{ route('generate', ['blog']) }}" data-bs-toggle="tooltip" data-bs-placement="top"
+            title="{{ __('Generate') }}" data-title="{{ __('Generate Content With AI') }}">
+            <i class="fas fa-robot"></i> {{ __('Generate with AI') }}
+        </a>
+    </div>
 @endif
 
 <div class="row">
-    <div class="form-group col-md-12">
-        {!! Form::label('', __('Title'), ['class' => 'form-label']) !!}
-        {!! Form::text('title', null, ['class' => 'form-control']) !!}
-    </div>
-    <div class="form-group col-md-12">
-        {!! Form::label('', __('Short Description'), ['class' => 'form-label']) !!}
-        {!! Form::text('short_description', null, ['class' => 'form-control']) !!}
-    </div>
+    @foreach (config('translation.languages') as $code => $language)
+        <div class="form-group col-12">
+            {!! Form::label('', __($language['label']) . ' ' . __('Title'), ['class' => 'form-label']) !!}
+            {!! Form::text("title[$code]", $blog->getTranslations('title')[$code], ['class' => 'form-control']) !!}
+        </div>
+    @endforeach
 
-    <div class="form-group col-md-12">
-        {!! Form::label('', __('Content'), ['class' => 'form-label']) !!}
+    @foreach (config('translation.languages') as $code => $language)
+        <div class="form-group col-12">
+            {!! Form::label('', __($language['label']) . ' ' . __('Short Description'), ['class' => 'form-label']) !!}
+            {!! Form::text("short_description[$code]", $blog->getTranslations('short_description')[$code], [
+                'class' => 'form-control',
+            ]) !!}
+        </div>
+    @endforeach
+
+    @foreach (config('translation.languages') as $code => $language)
+        <div class="form-group col-md-12">
+            {!! Form::label('', __($language['label']) . ' ' . __('Content'), ['class' => 'form-label']) !!}
             <div class="form-group mt-3">
-                {!! Form::textarea('content', null, ['id' => 'content', 'rows' => 8, 'class'=>'pc-tinymce-2']) !!}
+                {!! Form::textarea("content[$code]",  $blog->getTranslations('content')[$code], ['id' => 'content', 'rows' => 8, 'class' => 'pc-tinymce-2']) !!}
             </div>
-    </div>
+        </div>
+    @endforeach
+
     <div class="form-group  col-md-6">
         {!! Form::label('', __('Category'), ['class' => 'form-label']) !!}
-        {!! Form::select('category_id', $blogCategoryList, null, ['class' => 'form-control select category', 'data-role' => 'tagsinput', 'id' => 'category_id', 'name' =>'category_id','placeholder' => 'Select Option']) !!}
+        {!! Form::select('category_id', $blogCategoryList, null, [
+            'class' => 'form-control select category',
+            'data-role' => 'tagsinput',
+            'id' => 'category_id',
+            'name' => 'category_id',
+            'placeholder' => 'Select Option',
+        ]) !!}
     </div>
 
     <div class="form-group col-md-5">
@@ -46,71 +63,73 @@
 </div>
 {!! Form::close() !!}
 
-<script src="{{asset('css/summernote/summernote-bs4.js')}}"></script>
-    <script src="{{asset('assets/js/plugins/tinymce/tinymce.min.js')}}"></script>
-    <script>
-        if ($(".pc-tinymce-2").length) {
-            tinymce.init({
-                selector: '.pc-tinymce-2',
-                toolbar: 'link image',
-                plugins: 'image code',
-                image_title: true,
-                automatic_uploads: true,
-                file_picker_types: 'image',
-                file_picker_callback: function (cb, value, meta) {
+<script src="{{ asset('css/summernote/summernote-bs4.js') }}"></script>
+<script src="{{ asset('assets/js/plugins/tinymce/tinymce.min.js') }}"></script>
+<script>
+    if ($(".pc-tinymce-2").length) {
+        tinymce.init({
+            selector: '.pc-tinymce-2',
+            toolbar: 'link image',
+            plugins: 'image code',
+            image_title: true,
+            automatic_uploads: true,
+            file_picker_types: 'image',
+            file_picker_callback: function(cb, value, meta) {
                 var input = document.createElement('input');
                 input.setAttribute('type', 'file');
                 input.setAttribute('accept', 'image/*');
-                input.onchange = function () {
-                var file = this.files[0];
+                input.onchange = function() {
+                    var file = this.files[0];
 
-                var reader = new FileReader();
-                reader.onload = function () {
-                    var id = 'blobid' + (new Date()).getTime();
-                    var blobCache =  tinymce.activeEditor.editorUpload.blobCache;
-                    var base64 = reader.result.split(',')[1];
-                    var blobInfo = blobCache.create(id, file, base64);
-                    blobCache.add(blobInfo);
-                    cb(blobInfo.blobUri(), { title: file.name });
-                };
-                reader.readAsDataURL(file);
+                    var reader = new FileReader();
+                    reader.onload = function() {
+                        var id = 'blobid' + (new Date()).getTime();
+                        var blobCache = tinymce.activeEditor.editorUpload.blobCache;
+                        var base64 = reader.result.split(',')[1];
+                        var blobInfo = blobCache.create(id, file, base64);
+                        blobCache.add(blobInfo);
+                        cb(blobInfo.blobUri(), {
+                            title: file.name
+                        });
+                    };
+                    reader.readAsDataURL(file);
                 };
 
                 input.click();
             },
-                height: "400",
-                content_style: 'body { font-family: "Inter", sans-serif; }'
-            });
+            height: "400",
+            content_style: 'body { font-family: "Inter", sans-serif; }'
+        });
+    }
+    document.addEventListener('focusin', function(e) {
+        if (e.target.closest('.tox-tinymce-aux, .moxman-window, .tam-assetmanager-root') !== null) {
+            e.stopImmediatePropagation();
         }
-        document.addEventListener('focusin', function (e) {
-            if (e.target.closest('.tox-tinymce-aux, .moxman-window, .tam-assetmanager-root') !== null) {
-                e.stopImmediatePropagation();
-            }
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        $('.summernote').summernote({
+            height: 200,
         });
-    </script>
-    <script>
-        $(document).ready(function() {
-            $('.summernote').summernote({
-                height: 200,
-            });
-        });
-    </script>
-<script src="{{asset('assets/js/plugins/choices.min.js')}}"></script>
+    });
+</script>
+<script src="{{ asset('assets/js/plugins/choices.min.js') }}"></script>
 <script>
     if ($(".multi-select").length > 0) {
-              $( $(".multi-select") ).each(function( index,element ) {
-                  var id = $(element).attr('id');
-                     var multipleCancelButton = new Choices(
-                          '#'+id, {
-                              removeItemButton: true,
-                          }
-                      );
-              });
-         }
-  </script>
+        $($(".multi-select")).each(function(index, element) {
+            var id = $(element).attr('id');
+            var multipleCancelButton = new Choices(
+                '#' + id, {
+                    removeItemButton: true,
+                }
+            );
+        });
+    }
+</script>
 
 @push('custom-css')
-<link rel="stylesheet" href="{{asset('css/summernote/summernote-bs4.css')}}">
+    <link rel="stylesheet" href="{{ asset('css/summernote/summernote-bs4.css') }}">
     <style>
         .nav-tabs .nav-link-tabs.active {
             background: none;

@@ -1,28 +1,38 @@
 {{ Form::open(['route' => 'blog.store', 'method' => 'post', 'enctype' => 'multipart/form-data']) }}
 
 @if (isset(auth()->user()->currentPlan) && auth()->user()->currentPlan->enable_chatgpt == 'on')
-<div class="d-flex justify-content-end mb-1">
-    <a href="#" class="btn btn-primary me-2 ai-btn" data-size="lg" data-ajax-popup-over="true" data-url="{{ route('generate',['blog']) }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Generate') }}" data-title="{{ __('Generate Content With AI') }}">
-        <i class="fas fa-robot"></i> {{ __('Generate with AI') }}
-    </a>
-</div>
+    <div class="d-flex justify-content-end mb-1">
+        <a href="#" class="btn btn-primary me-2 ai-btn" data-size="lg" data-ajax-popup-over="true"
+            data-url="{{ route('generate', ['blog']) }}" data-bs-toggle="tooltip" data-bs-placement="top"
+            title="{{ __('Generate') }}" data-title="{{ __('Generate Content With AI') }}">
+            <i class="fas fa-robot"></i> {{ __('Generate with AI') }}
+        </a>
+    </div>
 @endif
 
 <div class="row">
-    <div class="form-group col-md-12">
-        {!! Form::label('', __('Title'), ['class' => 'form-label']) !!}
-        {!! Form::text('title', null, ['class' => 'form-control']) !!}
-    </div>
-    <div class="form-group col-md-12">
-        {!! Form::label('', __('Short Description'), ['class' => 'form-label']) !!}
-        {!! Form::text('short_description', null, ['class' => 'form-control']) !!}
-    </div>
-    <div class="form-group col-md-12">
-        {!! Form::label('', __('Content'), ['class' => 'form-label']) !!}
-        <div class="form-group mt-3">
-            <textarea class="pc-tinymce-2" name="content" id="content" rows="8"></textarea>
+    @foreach (config('translation.languages') as $code => $language)
+        <div class="form-group col-12">
+            {!! Form::label('', __($language['label']) . ' ' . __('Title'), ['class' => 'form-label']) !!}
+            {!! Form::text("title[$code]", null, ['class' => 'form-control']) !!}
         </div>
-    </div>
+    @endforeach
+
+    @foreach (config('translation.languages') as $code => $language)
+        <div class="form-group col-12">
+            {!! Form::label('', __($language['label']) . ' ' . __('Short Description'), ['class' => 'form-label']) !!}
+            {!! Form::text("short_description[$code]", null, ['class' => 'form-control']) !!}
+        </div>
+    @endforeach
+    @foreach (config('translation.languages') as $code => $language)
+        <div class="form-group col-md-12">
+            {!! Form::label('', __($language['label']) . ' ' . __('Content'), ['class' => 'form-label']) !!}
+            <div class="form-group mt-3">
+                <textarea class="pc-tinymce-2" name="content[{{ $code }}]" id="content" rows="8"></textarea>
+            </div>
+        </div>
+    @endforeach
+
     <div class="form-group  col-md-6">
         {!! Form::label('', __('Category'), ['class' => 'form-label']) !!}
         {!! Form::select('category_id', $blogCategoryList, null, [
@@ -102,19 +112,19 @@
     });
 </script>
 
-<script src="{{asset('assets/js/plugins/choices.min.js')}}"></script>
+<script src="{{ asset('assets/js/plugins/choices.min.js') }}"></script>
 <script>
     if ($(".multi-select").length > 0) {
-              $( $(".multi-select") ).each(function( index,element ) {
-                  var id = $(element).attr('id');
-                     var multipleCancelButton = new Choices(
-                          '#'+id, {
-                              removeItemButton: true,
-                          }
-                      );
-              });
-         }
-  </script>
+        $($(".multi-select")).each(function(index, element) {
+            var id = $(element).attr('id');
+            var multipleCancelButton = new Choices(
+                '#' + id, {
+                    removeItemButton: true,
+                }
+            );
+        });
+    }
+</script>
 
 @push('custom-css')
     <link rel="stylesheet" href="{{ asset('assets/css/summernote/summernote-bs4.css') }}">
@@ -124,5 +134,3 @@
         }
     </style>
 @endpush
-
-

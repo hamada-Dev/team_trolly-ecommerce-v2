@@ -7,6 +7,7 @@ use App\Models\Blog;
 use App\Models\Store;
 use App\Models\BlogCategory;
 use App\Models\Utility;
+use Illuminate\Support\Facades\Validator;
 
 class BlogController extends Controller
 {
@@ -46,18 +47,16 @@ class BlogController extends Controller
     {
         // if(auth()->user()->isAbleTo('Create Blog'))
         // {
-            $validator = \Validator::make(
-                $request->all(),
-                [
-                    'title' => 'required',
-                    'short_description' => 'required',
-                    'content' => 'required',
-                    'category_id' => 'required',
-                    'cover_image'=>'required',
-
-                ]
-            );
-
+            $rules = [
+                'category_id' => 'required',
+                'cover_image'=>'required',
+            ];
+            foreach (config('translation.languages') as $locale => $index) {
+                $rules += ['title.' . $locale => 'required|min:2|max:250'];
+                $rules += ['short_description.' . $locale => 'required|min:2|max:25000'];
+                $rules += ['content.' . $locale => 'required|min:2|max:25000'];
+            }
+            $validator = Validator::make($request->all(),$rules);
             if($validator->fails())
             {
                 $messages = $validator->getMessageBag();
@@ -91,8 +90,8 @@ class BlogController extends Controller
             $blog->short_description     = $request->short_description;
             $blog->content               = $request->content;
             $blog->category_id           = $request->category_id;
-            $blog->cover_image_url       = $path['full_url'];
-            $blog->cover_image_path      = $path['url'];
+            // $blog->cover_image_url       = $path['full_url'];
+            // $blog->cover_image_path      = $path['url'];
             $blog->theme_id              = APP_THEME();
             $blog->store_id              = getCurrentStore();
             $blog->save();
@@ -130,17 +129,16 @@ class BlogController extends Controller
     {
         // if(auth()->user()->isAbleTo('Edit Blog'))
         // {
-            $validator = \Validator::make(
-                $request->all(),
-                [
-                    'title' => 'required',
-                    'short_description' => 'required',
-                    'content' => 'required',
-                    'category_id' => 'required',
-                    // 'cover_image'=>'required',
-                ]
-            );
-
+            $rules = [
+                'category_id' => 'required',
+                // 'cover_image'=>'required',
+            ];
+            foreach (config('translation.languages') as $locale => $index) {
+                $rules += ['title.' . $locale => 'required|min:2|max:250'];
+                $rules += ['short_description.' . $locale => 'required|min:2|max:25000'];
+                $rules += ['content.' . $locale => 'required|min:2|max:25000'];
+            }
+            $validator = Validator::make($request->all(),$rules);
             if($validator->fails())
             {
                 $messages = $validator->getMessageBag();
@@ -160,8 +158,8 @@ class BlogController extends Controller
                     $path = Utility::upload_file($request,'cover_image',$fileName,$dir,[]);
 
                     if ($path['flag'] == 1) {
-                        $blog->cover_image_url       = $path['full_url'];
-                        $blog->cover_image_path      = $path['url'];
+                        // $blog->cover_image_url       = $path['full_url'];
+                        // $blog->cover_image_path      = $path['url'];
                     } else {
                         return redirect()->back()->with('error', __($path['msg']));
                     }
