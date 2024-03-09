@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\BlogCategory;
+use Illuminate\Support\Facades\Validator;
 
 class BlogCategoryController extends Controller
 {
@@ -38,18 +39,16 @@ class BlogCategoryController extends Controller
     {
         // if(auth()->user()->isAbleTo('Create Blog Category'))
         // {
-            $validator = \Validator::make(
-                $request->all(), [
-                                   'name' => 'required'
-                                ]
-            );
-
+            $rules = [];
+            foreach (config('translation.languages') as $locale => $index) {
+                $rules += ['name.' . $locale => 'required|min:2|max:250'];
+            }
+            $validator = Validator::make($request->all(),$rules);
             if($validator->fails())
             {
                 $messages = $validator->getMessageBag();
                 return redirect()->back()->with('error', $messages->first());
             }
-
 
             $blogCategory = new BlogCategory();
             $blogCategory->name         = $request->name;
@@ -82,16 +81,17 @@ class BlogCategoryController extends Controller
     {
         // if(auth()->user()->isAbleTo('Edit Blog Category'))
         // {
-            $validator = \Validator::make(
-                $request->all(), [
-                                   'name' => 'required',
-                               ]
-            );
+            $rules = [];
+            foreach (config('translation.languages') as $locale => $index) {
+                $rules += ['name.' . $locale => 'required|min:2|max:250'];
+            }
+            $validator = Validator::make($request->all(),$rules);
             if($validator->fails())
             {
                 $messages = $validator->getMessageBag();
                 return redirect()->back()->with('error', $messages->first());
             }
+
             $blogCategory = BlogCategory::find($id);
 
             $blogCategory->name = $request->name;
