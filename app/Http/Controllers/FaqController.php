@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Faq;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class FaqController extends Controller
 {
@@ -38,19 +39,16 @@ class FaqController extends Controller
     {
         // if(auth()->user()->isAbleTo('Create Faqs'))
         // {
-            $validator = \Validator::make(
-                $request->all(),
-                [
-                    'topic' => 'required',
-
-                ]
-            );
+            $rules = [];
+            foreach (config('translation.languages') as $locale => $index) {
+                $rules += ['topic.' . $locale => 'required|min:2|max:250'];
+            }
+            $validator = Validator::make($request->all(),$rules);
             if($validator->fails())
             {
                 $messages = $validator->getMessageBag();
                 return redirect()->back()->with('error', $messages->first());
             }
-
             $faq                 = new Faq();
             $faq->topic         = $request->topic;
             $faq->theme_id       = APP_THEME();
